@@ -45,6 +45,10 @@ project-starter»). Я читаю файл, провожу стартовый о
 10. **Меньше permission-prompts** (раздел 13) — встроенный скилл `fewer-permission-prompts`
     сканирует транскрипты, собирает частые read-only команды и заводит `.claude/settings.json`
     с allowlist. Дефолт: **спросить**.
+11. **Плагины claude-plugins-official под стек проекта** (раздел 14) — глянуть официальный
+    маркетплейс `github.com/anthropics/claude-plugins-official` и подобрать 2–3 плагина под
+    конкретный стек (языковой LSP, интеграция с внешним сервисом, security-ревью и т.п.).
+    Дефолт: **да** (просто посмотреть и предложить; ставить — по решению пользователя).
 Предлагай модули сам, чтобы пользователь не забыл; решает — он.
 
 ## 3. Принципы работы (по Карпатому)
@@ -216,5 +220,35 @@ CLI (`/speckit.*`, `.specify/` — дублирует наш `docs/superpowers` 
   9 из 10 использований read-only, сам паттерн даёт выполнение произвольного текста).
 - Вызывать: `Skill(fewer-permission-prompts)` — прочитает транскрипты и предложит приоритизированный
   список перед тем, как что-то менять.
+
+Приоритет: правила пользователя > конституция > Superpowers > дефолт агента.
+
+## 14. Опциональный модуль: плагины claude-plugins-official под стек проекта
+Официальный маркетплей Anthropic — `github.com/anthropics/claude-plugins-official`, две папки:
+`plugins/` (плагины от Anthropic — языковые LSP, ревью-инструменты, дев-утилиты) и
+`external_plugins/` (интеграции с внешними сервисами от партнёров — GitHub, Telegram, Linear,
+Firebase, Terraform и т.п.). Включать по ответу в чек-листе (дефолт: да — посмотреть и
+предложить, ставить решает пользователь). Проверено на F1 Predict (2026-07-24).
+
+- Маркетплейс уже встроен в Claude Code, отдельного `/plugin marketplace add` не нужно —
+  `claude plugin install <имя>@claude-plugins-official` работает сразу (проверить: `claude
+  plugin marketplace list` должен показывать `claude-plugins-official` в списке).
+- Список плагинов: `plugins/` — 39 шт (языковые LSP: typescript-lsp, pyright-lsp, gopls-lsp,
+  rust-analyzer-lsp и др.; ревью: code-review, pr-review-toolkit, security-guidance,
+  claude-security; дев: claude-md-management, commit-commands, session-report, hookify).
+  `external_plugins/` — 15 шт (github, gitlab, telegram, discord, linear, asana, firebase,
+  terraform, playwright и др.). Смотреть через GitHub API
+  (`api.github.com/repos/anthropics/claude-plugins-official/contents/plugins` и
+  `.../contents/external_plugins`) или README самого репо.
+- Подбирать по факту стека и интеграций проекта — не ставить всё подряд. Пример логики:
+  TS/JS-проект → `typescript-lsp`; проект с активным Supabase/Postgres и найденной security-дырой
+  → `security-guidance`; часто разбираемся со статусами GitHub Actions без `gh` CLI →
+  `github`; проект уже слал уведомления в Telegram → `telegram` (учесть: этот плагин — канал
+  **для управления Claude Code через Telegram**, а не инструмент дебага чужого бота проекта).
+- Предложить 2–3 плагина с кратким обоснованием (что решает именно в этом проекте), не просто
+  списком — и спросить, какие ставить. Устанавливать самому командой `claude plugin install
+  <имя>@claude-plugins-official` (через Bash), а не пытаться звать `/plugin` как слэш-команду.
+- Не путать с модулями 10–11 (Karpathy skills, Superpowers) — те два конкретных плагина уже
+  зашиты как отдельные пункты чек-листа; этот модуль — про остальной каталог под конкретный стек.
 
 Приоритет: правила пользователя > конституция > Superpowers > дефолт агента.
